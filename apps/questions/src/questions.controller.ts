@@ -1,12 +1,20 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { EventPattern, MessagePattern } from '@nestjs/microservices';
+import { Question } from '../entities/question.entity';
+import { createQuestionRequest } from '../requests/create-question.request';
 import { QuestionsService } from './questions.service';
 
 @Controller()
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
 
-  @Get()
-  getHello(): string {
-    return this.questionsService.getHello();
+  @MessagePattern()
+  async findQuestions(): Promise<Question[]> {
+    return await this.questionsService.findQuestions();
+  }
+
+  @EventPattern()
+  async createQuestion(request: createQuestionRequest): Promise<Question> {
+    return await this.createQuestion(request);
   }
 }
