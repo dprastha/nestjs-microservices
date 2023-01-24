@@ -9,7 +9,7 @@ import { CreateAnswerRequest } from '../requests/create-answer.request';
 export class AnswersController {
   constructor(private readonly answersService: AnswersService) {}
 
-  @MessagePattern()
+  @MessagePattern({ cmd: 'get-all-answers' })
   async findAnswers(request: FindAnswerRequest): Promise<Answer[]> {
     return await this.answersService.findAnswers(request);
   }

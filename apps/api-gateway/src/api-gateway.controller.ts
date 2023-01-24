@@ -1,12 +1,45 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiGatewayService } from './api-gateway.service';
+import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { Answer } from 'apps/answers/entities/answer.entity';
+import { CreateAnswerRequest } from 'apps/answers/requests/create-answer.request';
+import { Question } from 'apps/questions/entities/question.entity';
+import { Observable } from 'rxjs';
 
-@Controller()
+@Controller('questions')
 export class ApiGatewayController {
-  constructor(private readonly apiGatewayService: ApiGatewayService) {}
+  constructor(
+    @Inject('QUESTIONS_SERVICE')
+    private readonly clientQuestion: ClientProxy,
+    @Inject('ANSWERS_SERVICE')
+    private readonly clientAnswer: ClientProxy,
+  ) {}
 
   @Get()
-  getHello(): string {
-    return this.apiGatewayService.getHello();
+  async findQuestions(): Promise<Observable<Question>> {
+    return this.clientQuestion.send(
+      {
+        cmd: 'get-all-questions',
+      },
+      '',
+    );
+  }
+
+  @Post('/:questionId/answers')
+  async createAnswer(
+    @Body() request: CreateAnswerRequest,
+    @Param('questionId') questionId: string,
+  ): Promise<Observable<Answer>> {
+    request.questionId = questionId;
+    return this.clientAnswer.emit('answer_created', request);
+  }
+
+  @Get('/:questionsId/answers')
+  async getAnswers(@Param('questionsId') questionsId: string) {
+    return this.clientAnswer.send(
+      {
+        cmd: 'get-all-answers',
+      },
+      { questionsId },
+    );
   }
 }

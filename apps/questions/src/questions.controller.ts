@@ -8,7 +8,7 @@ import { QuestionsService } from './questions.service';
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
 
-  @MessagePattern()
+  @MessagePattern({ cmd: 'get-all-questions' })
   async findQuestions(): Promise<Question[]> {
     return await this.questionsService.findQuestions();
   }
