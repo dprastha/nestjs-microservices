@@ -3,7 +3,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { Answer } from 'apps/answers/entities/answer.entity';
 import { CreateAnswerRequest } from 'apps/answers/requests/create-answer.request';
 import { Question } from 'apps/questions/entities/question.entity';
-import { Observable } from 'rxjs';
+import { Observable, timeout } from 'rxjs';
 
 @Controller('questions')
 export class ApiGatewayController {
@@ -16,12 +16,14 @@ export class ApiGatewayController {
 
   @Get()
   async findQuestions(): Promise<Observable<Question>> {
-    return this.clientQuestion.send(
-      {
-        cmd: 'get-all-questions',
-      },
-      '',
-    );
+    return this.clientQuestion
+      .send(
+        {
+          cmd: 'get-all-questions',
+        },
+        '',
+      )
+      .pipe(timeout(500));
   }
 
   @Post('/:questionId/answers')
@@ -30,16 +32,18 @@ export class ApiGatewayController {
     @Param('questionId') questionId: string,
   ): Promise<Observable<Answer>> {
     request.questionId = questionId;
-    return this.clientAnswer.emit('answer_created', request);
+    return this.clientAnswer.emit('answer_created', request).pipe(timeout(500));
   }
 
   @Get('/:questionsId/answers')
   async getAnswers(@Param('questionsId') questionsId: string) {
-    return this.clientAnswer.send(
-      {
-        cmd: 'get-all-answers',
-      },
-      { questionsId },
-    );
+    return this.clientAnswer
+      .send(
+        {
+          cmd: 'get-all-answers',
+        },
+        { questionsId },
+      )
+      .pipe(timeout(500));
   }
 }
